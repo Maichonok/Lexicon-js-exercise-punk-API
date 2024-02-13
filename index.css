@@ -34,7 +34,7 @@ input[type="text"]:focus {
 }
 
 button:hover {
-  background-color: #007bff;
+  background-color: #333245;
 }
 
 button {
@@ -47,48 +47,56 @@ button {
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease;
+  white-space: nowrap;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 50px;
+  width: 100%;
 }
 
 .beer-card {
-  position: absolute;
-  top: 320px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-  width: 80%;
-  max-width: 600px;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 20px;
-  border-radius: 10px;
   display: flex;
   align-items: center;
+  padding-top: 40px;
+  gap: 20px;
+  width: 200px;
 }
 
 .beer-card img {
-  width: 50%;
+  width: 100px;
   height: auto;
-  margin-right: 20px;
 }
 
+/* .beer-info {
+  margin-left: 20px;
+} */
 .beer-info {
-  flex-grow: 1;
+  display: grid;
+  grid-template-rows: auto 1fr; /* Одна строка автоматической высоты, вторая занимает оставшееся пространство */
+}
+
+.beer-info p {
+  width: 100vh;
+  padding: 10px;
+}
+
+#random-beer-btn {
+  margin-left: auto;
 }
 
 .container {
-  position: relative;
-}
-
-.container img {
-  width: 100%;
-  height: auto;
-  display: block;
+  height: 100vh;
+  background-image: url(./beer.jpeg);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 .container-text {
-  position: absolute;
-  top: 60px;
-  left: 50%;
-  transform: translateX(-50%);
+  padding: 30px;
   font-size: 50px;
   font-weight: 500;
   color: #030127;
@@ -96,4 +104,13 @@ button {
   z-index: 1;
   text-align: center;
   margin: 0;
+}
+
+.beer-header {
+  padding: 20px 0 20px;
+  font-size: 20px;
+}
+
+.beer-name {
+  font-size: 14px;
 }

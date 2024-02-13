@@ -1,4 +1,4 @@
-@media screen and (max-width: 1080px) {
+/* @media screen and (max-width: 1080px) {
   form {
     top: 35%;
   }
@@ -15,18 +15,18 @@
 
   .container-text {
     top: 25px;
-    font-size: 24px; /* Уменьшение размера шрифта h1 для маленьких экранов */
+    font-size: 24px;
   }
 }
 
 @media screen and (max-width: 572px) {
   form {
-    top: 55%; /* Измененное положение формы для маленьких экранов */
+    top: 55%;
   }
 
   .container-text {
     top: 20px;
-    font-size: 24px; /* Уменьшение размера шрифта h1 для маленьких экранов */
+    font-size: 24px;
   }
 }
 
@@ -39,4 +39,4 @@
   button {
     margin-top: 10px;
   }
-}
+} */
