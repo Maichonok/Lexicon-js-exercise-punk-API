@@ -1,0 +1,42 @@
+@media screen and (max-width: 1080px) {
+  form {
+    top: 35%;
+  }
+
+  .container-text {
+    top: 25px;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  form {
+    top: 45%;
+  }
+
+  .container-text {
+    top: 25px;
+    font-size: 24px; /* Уменьшение размера шрифта h1 для маленьких экранов */
+  }
+}
+
+@media screen and (max-width: 572px) {
+  form {
+    top: 55%; /* Измененное положение формы для маленьких экранов */
+  }
+
+  .container-text {
+    top: 20px;
+    font-size: 24px; /* Уменьшение размера шрифта h1 для маленьких экранов */
+  }
+}
+
+@media screen and (max-width: 588px) {
+  form {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  button {
+    margin-top: 10px;
+  }
+}
