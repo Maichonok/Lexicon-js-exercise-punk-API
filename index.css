@@ -50,6 +50,20 @@ button {
   white-space: nowrap;
 }
 
+#more-info-beer-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #030127;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+#more-info-beer-btn:hover {
+  background-color: #FFA500; /* Измените цвет при наведении */
+}
+
 .wrapper {
   display: flex;
   justify-content: center;
@@ -59,11 +73,16 @@ button {
 }
 
 .beer-card {
+  color: #000;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding-top: 40px;
+  padding: 40px;
   gap: 20px;
-  width: 200px;
+  border: 2px solid #030127;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 195, 0, 0.5);
 }
 
 .beer-card img {
@@ -71,17 +90,14 @@ button {
   height: auto;
 }
 
-/* .beer-info {
-  margin-left: 20px;
-} */
 .beer-info {
   display: grid;
   grid-template-rows: auto 1fr; /* Одна строка автоматической высоты, вторая занимает оставшееся пространство */
 }
 
 .beer-info p {
-  width: 100vh;
-  padding: 10px;
+  min-width: 100vh;
+  padding: 0 0 10px;
 }
 
 #random-beer-btn {
@@ -89,6 +105,7 @@ button {
 }
 
 .container {
+  max-width: 1440px;
   height: 100vh;
   background-image: url(./beer.jpeg);
   background-size: cover;
@@ -112,5 +129,6 @@ button {
 }
 
 .beer-name {
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 500;
 }

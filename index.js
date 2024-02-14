@@ -62,92 +62,131 @@ document.addEventListener("DOMContentLoaded", () => {
     beerImage.src = beer.image_url;
   }
 });
-
 // Add event listener to the "See More" button
 document
   .getElementById("more-info-beer-btn")
   .addEventListener("click", function () {
-    // Get the random beer data stored in the button's data attribute
     const randomBeer = JSON.parse(
-      document
-        .getElementById("random-beer-btn")
-        .getAttribute("data-random-beer")
+      randomBeerBtn.getAttribute("data-random-beer")
     );
 
-    // Create elements to display beer data
-    const card = document.createElement("div");
-    card.classList.add("beer-card");
+    const url = `beer-details.html?name=${randomBeer.name}`;
+    window.location.href = url;
 
-    const img = document.createElement("img");
-    img.src = randomBeer.image_url;
-    img.alt = randomBeer.name;
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
 
-    const beerInfo = document.createElement("div");
-    beerInfo.classList.add("beer-info");
-
-    // const nameHeader = document.createElement("h2");
-    // nameHeader.textContent = `Name: ${randomBeer.name}`;
-
-    beerName.textContent = randomBeer.name;
-
-    const description = document.createElement("p");
-    description.textContent = `Description: ${randomBeer.description}`;
-
-    const volume = document.createElement("p");
-    volume.textContent = `Volume: ${
-      randomBeer.volume ? randomBeer.volume.value : "N/A"
-    } ${randomBeer.volume ? randomBeer.volume.unit : "N/A"}`;
-
-    const ingredients = document.createElement("p");
-    ingredients.textContent = `Ingredients: ${
-      Array.isArray(randomBeer.ingredients)
-        ? getIngredients(randomBeer.ingredients)
-        : "N/A"
-    }`;
-
-    const hops = document.createElement("p");
-    hops.textContent = `Hops: ${
-      Array.isArray(randomBeer.ingredients)
-        ? getHops(randomBeer.ingredients)
-        : "N/A"
-    }`;
-
-    const foodPairing = document.createElement("p");
-    foodPairing.textContent = `Food Pairing: ${
-      randomBeer.food_pairing ? randomBeer.food_pairing : "N/A"
-    }`;
-
-    const brewersTips = document.createElement("p");
-    brewersTips.textContent = `Brewers Tips: ${
-      randomBeer.brewers_tips ? randomBeer.brewers_tips : "N/A"
-    }`;
-
-    beerInfo.appendChild(beerName);
-    beerInfo.appendChild(description);
-    beerInfo.appendChild(volume);
-    beerInfo.appendChild(ingredients);
-    beerInfo.appendChild(hops);
-    beerInfo.appendChild(foodPairing);
-    beerInfo.appendChild(brewersTips);
-
-    card.appendChild(img);
-    card.appendChild(beerInfo);
-
-    // Clear previous beer card
-    const wrapper = document.querySelector(".wrapper");
-    wrapper.innerHTML = "";
-    wrapper.appendChild(card);
+    const nameBeer = urlParams.get("name");
   });
+
+async function fetchBeerDetails(beerName) {
+  try {
+    const response = await fetch(
+      `https://api.punkapi.com/v2/beers?beer_name=${beerName}&description=true&volume=true&abv=true&ingredients=true&food_pairing=true&brewers_tips=true`
+    );
+
+    const data = await response.json();
+    // Предполагая, что API вернуло массив объектов, и выбираем первый объект (первый напиток с таким именем)
+    const beerDetails = data[0];
+    return beerDetails;
+  } catch (error) {
+    console.error("Ошибка при получении информации о напитке:", error);
+  }
+}
+
+function displayBeerDetails(beerDetails) {
+  if (!beerDetails) {
+    console.error("No information about the drink");
+    return;
+  }
+
+  const card = document.createElement("div");
+  card.classList.add("beer-card");
+
+  if (beerDetails.image_url) {
+    beerImage.src = beerDetails.image_url;
+  } else {
+    console.error("No URL for the drink image");
+  }
+
+  const beerInfo = document.createElement("div");
+  beerInfo.classList.add("beer-info");
+
+  beerName.textContent = beerDetails.name;
+
+  const description = document.createElement("p");
+  description.textContent = `Description: ${beerDetails.description}`;
+
+  const volume = document.createElement("p");
+  volume.textContent = `Volume: ${
+    beerDetails.volume ? beerDetails.volume.value : "N/A"
+  } ${beerDetails.volume ? beerDetails.volume.unit : "N/A"}`;
+
+  const abv = document.createElement("p");
+  abv.textContent = `ABV: ${beerDetails.abv ? beerDetails.abv : "N/A"}`;
+
+  const ingredients = document.createElement("p");
+  ingredients.textContent = `Ingredients: ${getIngredients(
+    beerDetails.ingredients
+  )}`;
+
+  const foodPairing = document.createElement("p");
+  foodPairing.textContent = `Food Pairing: ${
+    beerDetails.food_pairing ? beerDetails.food_pairing : "N/A"
+  }`;
+
+  const brewersTips = document.createElement("p");
+  brewersTips.textContent = `Brewers Tips: ${
+    beerDetails.brewers_tips ? beerDetails.brewers_tips : "N/A"
+  }`;
+
+  beerInfo.appendChild(beerName);
+  beerInfo.appendChild(description);
+  beerInfo.appendChild(abv);
+  beerInfo.appendChild(volume);
+  beerInfo.appendChild(ingredients);
+  beerInfo.appendChild(foodPairing);
+  beerInfo.appendChild(brewersTips);
+
+  card.appendChild(img);
+  card.appendChild(beerInfo);
+
+  // Clear previous beer card
+  const wrapper = document.querySelector(".wrapper");
+  wrapper.innerHTML = "";
+  wrapper.appendChild(card);
+}
+
+fetchBeerDetails(beerName).then((beerDetails) => {
+  displayBeerDetails(beerDetails);
+});
 
 // Function to get a string representation of ingredients
 function getIngredients(ingredients) {
-  return ingredients.map((ingredient) => ingredient.name).join(", ");
-}
+  let ingredientArray = [];
 
-// Function to get a string representation of hops
-function getHops(ingredients) {
-  const hops = ingredients
-    .filter((ingredient) => ingredient.category === "hops")
-    .map((hop) => hop.name);
-  return hops.length > 0 ? hops.join(", ") : "N/A";
+  if (ingredients.malt) {
+    ingredientArray.push("Malt:\n");
+    ingredients.malt.forEach((malt) => {
+      ingredientArray.push(
+        `  ${malt.name}: ${malt.amount.value} ${malt.amount.unit}`
+      );
+    });
+  }
+
+  if (ingredients.hops) {
+    ingredientArray.push("\nHops:\n");
+    ingredients.hops.forEach((hop) => {
+      ingredientArray.push(
+        `  ${hop.name}: ${hop.amount.value} ${hop.amount.unit} (${hop.add} - ${hop.attribute})`
+      );
+    });
+  }
+
+  if (ingredients.yeast) {
+    ingredientArray.push("\nYeast:\n"); // Add a new line after the category label
+    ingredientArray.push(`${ingredients.yeast}`);
+  }
+
+  return ingredientArray.join("\n");
 }
