@@ -5,7 +5,7 @@ const beerName = document.querySelector(".beer-name");
 const beerImage = document.querySelector(".beer-card img");
 const errorMessage = document.getElementById("error-message");
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // Function to handle form submission
   searchForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -17,61 +17,63 @@ document.addEventListener("DOMContentLoaded", () => {
       displaySearchResults(beers);
     }
   });
-
-  // Function to handle click event for random beer button
+  await getRandomAndDisplayBeer();
   randomBeerBtn.addEventListener("click", async () => {
-    // Get a random beer
+    await getRandomAndDisplayBeer();
+  });
+  // Function to handle click event for random beer button
+  async function getRandomAndDisplayBeer() {
     const randomBeer = await getRandomBeer();
     displayBeer(randomBeer);
-    // Store the random beer data in a data attribute
-    randomBeerBtn.setAttribute("data-random-beer", JSON.stringify(randomBeer));
-  });
-
-  // Function to search for beers using the Punk API
-  async function searchBeer(query) {
-    const response = await fetch(
-      `https://api.punkapi.com/v2/beers?beer_name=${query}`
-    );
-    const data = await response.json();
-    return data;
   }
-
-  // Function to display search results
-  function displaySearchResults(beers) {
-    // Clear previous search results
-    beerName.textContent = "";
-    beerImage.src = "";
-    // Display each beer name in the search results
-    beers.forEach((beer) => {
-      const beerItem = document.createElement("div");
-      beerItem.textContent = beer.name;
-      // Append beer item to the main section
-      document.querySelector("main").appendChild(beerItem);
-    });
-  }
-
-  // Function to get a random beer from the Punk API
-  async function getRandomBeer() {
-    const response = await fetch("https://api.punkapi.com/v2/beers/random");
-    const [randomBeer] = await response.json();
-    return randomBeer;
-  }
-
-  // Function to display a beer
-  function displayBeer(beer) {
-    beerName.textContent = beer.name;
-    // Check if there is an image URL
-    if (beer.image_url) {
-      beerImage.src = beer.image_url;
-      beerImage.alt = "Beer Image";
-      beerImage.style.display = "block"; // Show the image element
-      errorMessage.textContent = ""; // Clear any previous error message
-    } else {
-      beerImage.style.display = "none"; // Hide the image element
-      errorMessage.textContent = "Error: No image available"; // Display error message
-    }
-  }
+  // Store the random beer data in a data attribute
+  randomBeerBtn.setAttribute("data-random-beer", JSON.stringify(randomBeer));
 });
+
+// Function to search for beers using the Punk API
+async function searchBeer(query) {
+  const response = await fetch(
+    `https://api.punkapi.com/v2/beers?beer_name=${query}`
+  );
+  const data = await response.json();
+  return data;
+}
+
+// Function to display search results
+function displaySearchResults(beers) {
+  // Clear previous search results
+  beerName.textContent = "";
+  beerImage.src = "";
+  // Display each beer name in the search results
+  beers.forEach((beer) => {
+    const beerItem = document.createElement("div");
+    beerItem.textContent = beer.name;
+    // Append beer item to the main section
+    document.querySelector("main").appendChild(beerItem);
+  });
+}
+
+// Function to get a random beer from the Punk API
+async function getRandomBeer() {
+  const response = await fetch("https://api.punkapi.com/v2/beers/random");
+  const [randomBeer] = await response.json();
+  return randomBeer;
+}
+
+// Function to display a beer
+function displayBeer(beer) {
+  beerName.textContent = beer.name;
+  // Check if there is an image URL
+  if (beer.image_url) {
+    beerImage.src = beer.image_url;
+    beerImage.alt = "Beer Image";
+    beerImage.style.display = "block"; // Show the image element
+    errorMessage.textContent = ""; // Clear any previous error message
+  } else {
+    beerImage.style.display = "none"; // Hide the image element
+    errorMessage.textContent = "Error: No image available"; // Display error message
+  }
+}
 // Add event listener to the "See More" button
 document
   .getElementById("more-info-beer-btn")
