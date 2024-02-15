@@ -17,6 +17,12 @@
         <input type="text" id="search-input" placeholder="Search for a beer" />
         <button type="submit">Search</button>
       </form>
+      <div class="results">
+        <h2 class="header-results">Search Results:</h2>
+        <p id="main-error-message"></p>
+        <ul id="search-results" class="beer-list"></ul>
+        <div id="pagination-buttons"></div>
+      </div>
       <div class="wrapper">
         <div class="beer-card">
           <img src="" alt="Beer Image" />
@@ -31,6 +37,9 @@
         </div>
       </div>
     </main>
+    <footer>
+      <p>&copy; <span id="current-year"></span> Beer Brewery</p>
+    </footer>
     <script src="index.js" defer></script>
   </body>
 </html>

@@ -3,6 +3,9 @@ const searchInput = document.getElementById("search-input");
 const randomBeerBtn = document.getElementById("random-beer-btn");
 const beerName = document.querySelector(".beer-name");
 const beerImage = document.querySelector(".beer-card img");
+const searchResults = document.getElementById("search-results");
+const paginationButtons = document.getElementById("pagination-buttons");
+const mainErrorMessage = document.getElementById("main-error-message");
 const errorMessage = document.getElementById("error-message");
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -10,11 +13,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   searchForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const searchTerm = searchInput.value.trim();
-    if (searchTerm !== "") {
-      // Perform beer search using the searchTerm
-      const beers = await searchBeer(searchTerm);
-      // Display search results (list of beer names)
-      displaySearchResults(beers);
+    if (!isValidSearchTerm(searchTerm)) {
+      mainErrorMessage.textContent = "Please enter a valid search term.";
+      return; // Прекращаем выполнение функции, если введенный термин поиска невалиден
+    }
+    try {
+      if (searchTerm !== "") {
+        const beers = await searchBeer(searchTerm);
+        displaySearchResults(beers);
+      }
+    } catch (error) {
+      console.error("Error searching for beers:", error);
+      // Дополнительная обработка ошибок, если это необходимо
     }
   });
   await getRandomAndDisplayBeer();
@@ -25,10 +35,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function getRandomAndDisplayBeer() {
     const randomBeer = await getRandomBeer();
     displayBeer(randomBeer);
+
+    // Store the random beer data in a data attribute
+    randomBeerBtn.setAttribute("data-random-beer", JSON.stringify(randomBeer));
   }
-  // Store the random beer data in a data attribute
-  randomBeerBtn.setAttribute("data-random-beer", JSON.stringify(randomBeer));
 });
+// Function to validate the search term
+function isValidSearchTerm(searchTerm) {
+  // Use a regular expression to check for special characters
+  const regex = /^[a-zA-Z0-9\s]+$/;
+  return regex.test(searchTerm);
+}
 
 // Function to search for beers using the Punk API
 async function searchBeer(query) {
@@ -39,18 +56,56 @@ async function searchBeer(query) {
   return data;
 }
 
-// Function to display search results
+// Display search results with pagination
 function displaySearchResults(beers) {
-  // Clear previous search results
-  beerName.textContent = "";
-  beerImage.src = "";
-  // Display each beer name in the search results
-  beers.forEach((beer) => {
-    const beerItem = document.createElement("div");
-    beerItem.textContent = beer.name;
-    // Append beer item to the main section
-    document.querySelector("main").appendChild(beerItem);
-  });
+  const itemsPerPage = 10;
+  let currentPage = 1;
+
+  function paginateResults() {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedBeers = beers.slice(startIndex, endIndex);
+
+    searchResults.innerHTML = ""; // Clear previous search results
+    paginatedBeers.forEach((beer) => {
+      const beerItem = document.createElement("li");
+      beerItem.textContent = beer.name;
+      beerItem.classList.add("beer-item");
+      beerItem.addEventListener("click", () => {
+        navigateToBeerInfoPage(beer.name);
+      });
+      searchResults.appendChild(beerItem);
+    });
+
+    updatePaginationButtons();
+  }
+
+  function updatePaginationButtons() {
+    const totalPages = Math.ceil(beers.length / itemsPerPage);
+    paginationButtons.innerHTML = "";
+
+    for (let i = 1; i <= totalPages; i++) {
+      const pageBtn = document.createElement("button");
+      pageBtn.textContent = i;
+      pageBtn.classList.add("pagination-btn");
+      if (i === currentPage) {
+        pageBtn.disabled = true;
+        pageBtn.classList.add("active");
+      }
+      pageBtn.addEventListener("click", () => {
+        currentPage = i;
+        paginateResults();
+      });
+      paginationButtons.appendChild(pageBtn);
+    }
+  }
+
+  paginateResults();
+}
+
+function navigateToBeerInfoPage(beerName) {
+  const url = `beer-details.html?name=${encodeURIComponent(beerName)}`;
+  window.location.href = url;
 }
 
 // Function to get a random beer from the Punk API
@@ -68,7 +123,7 @@ function displayBeer(beer) {
     beerImage.src = beer.image_url;
     beerImage.alt = "Beer Image";
     beerImage.style.display = "block"; // Show the image element
-    errorMessage.textContent = ""; // Clear any previous error message
+    // errorMessage.textContent = ""; // Clear any previous error message
   } else {
     beerImage.style.display = "none"; // Hide the image element
     errorMessage.textContent = "Error: No image available"; // Display error message
@@ -101,7 +156,8 @@ async function fetchBeerDetails(beerName) {
     const beerDetails = data[0];
     return beerDetails;
   } catch (error) {
-    console.error("Error fetching drink information:", error);
+    errorMessage.textContent =
+      "Error fetching drink information. Please try again later.";
   }
 }
 
@@ -216,3 +272,8 @@ function getIngredients(ingredients) {
 
   return ingredientArray.join("\n");
 }
+
+// ?beer_name=Hello My Name Is Lieke
+//Russian Doll – India Pale Ale
+const currentYear = new Date().getFullYear();
+document.getElementById("current-year").textContent = currentYear;
