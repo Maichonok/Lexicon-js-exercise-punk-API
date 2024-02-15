@@ -61,7 +61,7 @@ button {
 }
 
 #more-info-beer-btn:hover {
-  background-color: #FFA500; /* Измените цвет при наведении */
+  background-color: #ffa500; /* Измените цвет при наведении */
 }
 
 .wrapper {
@@ -131,4 +131,10 @@ button {
 .beer-name {
   font-size: 18px;
   font-weight: 500;
+}
+
+#error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
 }

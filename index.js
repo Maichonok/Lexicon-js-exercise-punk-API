@@ -3,6 +3,7 @@ const searchInput = document.getElementById("search-input");
 const randomBeerBtn = document.getElementById("random-beer-btn");
 const beerName = document.querySelector(".beer-name");
 const beerImage = document.querySelector(".beer-card img");
+const errorMessage = document.getElementById("error-message");
 
 document.addEventListener("DOMContentLoaded", () => {
   // Function to handle form submission
@@ -59,7 +60,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to display a beer
   function displayBeer(beer) {
     beerName.textContent = beer.name;
-    beerImage.src = beer.image_url;
+    // Check if there is an image URL
+    if (beer.image_url) {
+      beerImage.src = beer.image_url;
+      beerImage.alt = "Beer Image";
+      beerImage.style.display = "block"; // Show the image element
+      errorMessage.textContent = ""; // Clear any previous error message
+    } else {
+      beerImage.style.display = "none"; // Hide the image element
+      errorMessage.textContent = "Error: No image available"; // Display error message
+    }
   }
 });
 // Add event listener to the "See More" button
@@ -86,11 +96,10 @@ async function fetchBeerDetails(beerName) {
     );
 
     const data = await response.json();
-    // Предполагая, что API вернуло массив объектов, и выбираем первый объект (первый напиток с таким именем)
     const beerDetails = data[0];
     return beerDetails;
   } catch (error) {
-    console.error("Ошибка при получении информации о напитке:", error);
+    console.error("Error fetching drink information:", error);
   }
 }
 
@@ -150,6 +159,21 @@ function displayBeerDetails(beerDetails) {
 
   card.appendChild(img);
   card.appendChild(beerInfo);
+
+  // Check if there is an image URL
+  if (beerDetails.image_url) {
+    // If there is an image URL, create an image element and set its source
+    const beerImage = document.createElement("img");
+    beerImage.src = beerDetails.image_url;
+    beerImage.classList.add("beer-image");
+    card.appendChild(beerImage);
+  } else {
+    // If there is no image URL, display a message
+    const noImageMessage = document.createElement("p");
+    noImageMessage.textContent = "No image available for this drink";
+    card.appendChild(noImageMessage);
+    console.error("No URL for the drink image");
+  }
 
   // Clear previous beer card
   const wrapper = document.querySelector(".wrapper");
