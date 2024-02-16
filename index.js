@@ -3,277 +3,260 @@ const searchInput = document.getElementById("search-input");
 const randomBeerBtn = document.getElementById("random-beer-btn");
 const beerName = document.querySelector(".beer-name");
 const beerImage = document.querySelector(".beer-card img");
+const beerUrl = document.querySelector("#more-info-beer-btn");
 const searchResults = document.getElementById("search-results");
 const paginationButtons = document.getElementById("pagination-buttons");
 const mainErrorMessage = document.getElementById("main-error-message");
 const errorMessage = document.getElementById("error-message");
+const spinner = document.getElementById("spinner");
 
-document.addEventListener("DOMContentLoaded", async () => {
-  // Function to handle form submission
-  searchForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const searchTerm = searchInput.value.trim();
-    if (!isValidSearchTerm(searchTerm)) {
-      mainErrorMessage.textContent = "Please enter a valid search term.";
-      return; // Прекращаем выполнение функции, если введенный термин поиска невалиден
-    }
-    try {
-      if (searchTerm !== "") {
-        const beers = await searchBeer(searchTerm);
-        displaySearchResults(beers);
-      }
-    } catch (error) {
-      console.error("Error searching for beers:", error);
-      // Дополнительная обработка ошибок, если это необходимо
-    }
-  });
-  await getRandomAndDisplayBeer();
-  randomBeerBtn.addEventListener("click", async () => {
-    await getRandomAndDisplayBeer();
-  });
-  // Function to handle click event for random beer button
-  async function getRandomAndDisplayBeer() {
-    const randomBeer = await getRandomBeer();
-    displayBeer(randomBeer);
+renderMainPage();
+renderDetailedPage();
 
-    // Store the random beer data in a data attribute
-    randomBeerBtn.setAttribute("data-random-beer", JSON.stringify(randomBeer));
+async function renderMainPage() {
+  if (!document.querySelector("#main-page")) {
+    return;
   }
-});
-// Function to validate the search term
-function isValidSearchTerm(searchTerm) {
-  // Use a regular expression to check for special characters
-  const regex = /^[a-zA-Z0-9\s]+$/;
-  return regex.test(searchTerm);
-}
 
-// Function to search for beers using the Punk API
-async function searchBeer(query) {
-  const response = await fetch(
-    `https://api.punkapi.com/v2/beers?beer_name=${query}`
-  );
-  const data = await response.json();
-  return data;
-}
+  document.addEventListener("DOMContentLoaded", async () => {
+    // Function to handle form submission
+    searchForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const searchTerm = searchInput.value.trim();
 
-// Display search results with pagination
-function displaySearchResults(beers) {
-  const itemsPerPage = 10;
-  let currentPage = 1;
+      try {
+        if (searchTerm !== "") {
+          const beers = await searchBeer(searchTerm);
 
-  function paginateResults() {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedBeers = beers.slice(startIndex, endIndex);
+          if (beers.length === 0) {
+            mainErrorMessage.textContent = "Cannot find any beer";
+          }
 
-    searchResults.innerHTML = ""; // Clear previous search results
-    paginatedBeers.forEach((beer) => {
-      const beerItem = document.createElement("li");
-      beerItem.textContent = beer.name;
-      beerItem.classList.add("beer-item");
-      beerItem.addEventListener("click", () => {
-        navigateToBeerInfoPage(beer.name);
-      });
-      searchResults.appendChild(beerItem);
+          displaySearchResults(beers);
+        }
+      } catch (error) {
+        console.error("Error searching for beers:", error);
+      }
+    });
+    await getRandomAndDisplayBeer();
+    randomBeerBtn.addEventListener("click", async () => {
+      await getRandomAndDisplayBeer();
     });
 
-    updatePaginationButtons();
-  }
+    // Function to handle click event for random beer button
+    async function getRandomAndDisplayBeer() {
+      const randomBeer = await getRandomBeer();
+      displayBeer(randomBeer);
+    }
+  });
 
-  function updatePaginationButtons() {
-    const totalPages = Math.ceil(beers.length / itemsPerPage);
-    paginationButtons.innerHTML = "";
+  /* Search feature:
+Function to validate the search term.
+Function to search for beers using the Punk API.
+Display search results with pagination
+  */
 
-    for (let i = 1; i <= totalPages; i++) {
-      const pageBtn = document.createElement("button");
-      pageBtn.textContent = i;
-      pageBtn.classList.add("pagination-btn");
-      if (i === currentPage) {
-        pageBtn.disabled = true;
-        pageBtn.classList.add("active");
-      }
-      pageBtn.addEventListener("click", () => {
-        currentPage = i;
-        paginateResults();
-      });
-      paginationButtons.appendChild(pageBtn);
+  async function searchBeer(query) {
+    mainErrorMessage.textContent = "";
+
+    showSpinner();
+    try {
+      const response = await fetch(
+        `https://api.punkapi.com/v2/beers?beer_name=${query}`
+      );
+      const data = await response.json();
+      return data;
+    } catch (e) {
+    } finally {
+      hideSpinner();
     }
   }
 
-  paginateResults();
-}
+  function clearList() {
+    searchResults.innerHTML = ""; // Clear previous search results
+  }
 
-function navigateToBeerInfoPage(beerName) {
-  const url = `beer-details.html?name=${encodeURIComponent(beerName)}`;
-  window.location.href = url;
-}
+  function displaySearchResults(beers) {
+    const itemsPerPage = 10;
+    let currentPage = 1;
 
-// Function to get a random beer from the Punk API
-async function getRandomBeer() {
-  const response = await fetch("https://api.punkapi.com/v2/beers/random");
-  const [randomBeer] = await response.json();
-  return randomBeer;
-}
+    function paginateResults() {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedBeers = beers.slice(startIndex, endIndex);
 
-// Function to display a beer
-function displayBeer(beer) {
-  beerName.textContent = beer.name;
-  // Check if there is an image URL
-  if (beer.image_url) {
-    beerImage.src = beer.image_url;
-    beerImage.alt = "Beer Image";
-    beerImage.style.display = "block"; // Show the image element
-    // errorMessage.textContent = ""; // Clear any previous error message
-  } else {
-    beerImage.style.display = "none"; // Hide the image element
-    errorMessage.textContent = "Error: No image available"; // Display error message
+      clearList();
+      paginatedBeers.forEach((beer) => {
+        const beerItem = document.createElement("li");
+        beerItem.textContent = beer.name;
+        beerItem.classList.add("beer-item");
+        beerItem.addEventListener("click", () => {
+          navigateToBeerInfoPage(beer.id);
+        });
+        searchResults.appendChild(beerItem);
+      });
+
+      updatePaginationButtons();
+    }
+
+    function updatePaginationButtons() {
+      const totalPages = Math.ceil(beers.length / itemsPerPage);
+      paginationButtons.innerHTML = "";
+
+      for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement("button");
+        pageBtn.textContent = i;
+        pageBtn.classList.add("pagination-btn");
+        if (i === currentPage) {
+          pageBtn.disabled = true;
+          pageBtn.classList.add("active");
+        }
+        pageBtn.addEventListener("click", () => {
+          currentPage = i;
+          paginateResults();
+        });
+        paginationButtons.appendChild(pageBtn);
+      }
+    }
+
+    paginateResults();
+  }
+
+  function navigateToBeerInfoPage(id) {
+    const url = `/beer-details.html?id=${id}`;
+    window.location.href = url;
+  }
+  async function getRandomBeer() {
+    const response = await fetch("https://api.punkapi.com/v2/beers/random");
+    const [randomBeer] = await response.json();
+    return randomBeer;
+  }
+
+  function displayBeer(beer) {
+    beerName.textContent = beer.name;
+    beerUrl.href = `/beer-details.html?id=${beer.id}`;
+    if (beer.image_url) {
+      beerImage.src = beer.image_url;
+      beerImage.alt = "Beer Image";
+      beerImage.style.display = "block";
+    } else {
+      beerImage.src = "/no-image.jpeg";
+      beerImage.alt = "No image available";
+      beerImage.style.display = "block";
+    }
   }
 }
-// Add event listener to the "See More" button
-document
-  .getElementById("more-info-beer-btn")
-  .addEventListener("click", function () {
-    const randomBeer = JSON.parse(
-      randomBeerBtn.getAttribute("data-random-beer")
-    );
 
-    const url = `beer-details.html?name=${randomBeer.name}`;
-    window.location.href = url;
+async function renderDetailedPage() {
+  if (!document.querySelector("#detailed-page")) {
+    return;
+  }
 
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-
-    const nameBeer = urlParams.get("name");
-  });
-
-async function fetchBeerDetails(beerName) {
   try {
-    const response = await fetch(
-      `https://api.punkapi.com/v2/beers?beer_name=${beerName}&description=true&volume=true&abv=true&ingredients=true&food_pairing=true&brewers_tips=true`
-    );
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get("id");
 
-    const data = await response.json();
-    const beerDetails = data[0];
-    return beerDetails;
+    const beerDetails = await fetchBeerDetails(id);
+    displayBeerDetails(beerDetails);
   } catch (error) {
     errorMessage.textContent =
       "Error fetching drink information. Please try again later.";
   }
+
+  /* Details beer feature:
+    Function to get a beer from the Punk API according to its name.
+    Function to display the details beer.
+    */
+  async function fetchBeerDetails(id) {
+    try {
+      const response = await fetch(`https://api.punkapi.com/v2/beers/${id}`);
+
+      const data = await response.json();
+      const beerDetails = data[0];
+      return beerDetails;
+    } catch (error) {
+      errorMessage.textContent =
+        "Error fetching drink information. Please try again later.";
+    }
+  }
+
+  function displayBeerDetails(beerDetails) {
+    const beerDescriptionElem = document.querySelector(".beer-description");
+    const beerVolumeElem = document.querySelector(".beer-volume");
+    const beerAbvElem = document.querySelector(".beer-abv");
+    const beerIngredientsElem = document.querySelector(".beer-ingredients");
+    const beerFoodPairingElem = document.querySelector(".beer-food-pairing");
+    const beerBrewersTipsElem = document.querySelector(".beer-brewers-tips");
+
+    if (beerDetails) {
+      beerName.textContent = beerDetails.name;
+      beerDescriptionElem.textContent = `Description: ${beerDetails.description}`;
+      beerVolumeElem.textContent = `Volume: ${
+        beerDetails.volume ? beerDetails.volume.value : "N/A"
+      } ${beerDetails.volume ? beerDetails.volume.unit : "N/A"}`;
+      beerAbvElem.textContent = `ABV: ${
+        beerDetails.abv ? beerDetails.abv : "N/A"
+      }`;
+      beerIngredientsElem.textContent = `Ingredients: ${getIngredients(
+        beerDetails.ingredients
+      )}`;
+      beerFoodPairingElem.textContent = `Food Pairing: ${
+        beerDetails.food_pairing ? beerDetails.food_pairing : "N/A"
+      }`;
+      beerBrewersTipsElem.textContent = `Brewers Tips: ${
+        beerDetails.brewers_tips ? beerDetails.brewers_tips : "N/A"
+      }`;
+
+      if (beerDetails.image_url) {
+        beerImage.src = beerDetails.image_url;
+      } else {
+        beerImage.style.display = "none";
+        beerImage.src = "/no-image.jpeg";
+        beerImage.alt = "No image available";
+        beerImage.style.display = "block";
+      }
+    } else {
+      errorMessage.textContent = "No information about the drink";
+    }
+  }
+
+  // Function to get a string representation of ingredients
+  function getIngredients(ingredients) {
+    let ingredientArray = [];
+
+    if (ingredients.malt) {
+      ingredientArray.push("Malt:\n");
+      ingredients.malt.forEach((malt) => {
+        ingredientArray.push(
+          `  ${malt.name}: ${malt.amount.value} ${malt.amount.unit}`
+        );
+      });
+    }
+
+    if (ingredients.hops) {
+      ingredientArray.push("\nHops:\n");
+      ingredients.hops.forEach((hop) => {
+        ingredientArray.push(
+          `  ${hop.name}: ${hop.amount.value} ${hop.amount.unit} (${hop.add} - ${hop.attribute})`
+        );
+      });
+    }
+
+    if (ingredients.yeast) {
+      ingredientArray.push("\nYeast:\n"); // Add a new line after the category label
+      ingredientArray.push(`${ingredients.yeast}`);
+    }
+
+    return ingredientArray.join("\n");
+  }
 }
 
-function displayBeerDetails(beerDetails) {
-  if (!beerDetails) {
-    console.error("No information about the drink");
-    return;
-  }
-
-  const card = document.createElement("div");
-  card.classList.add("beer-card");
-
-  if (beerDetails.image_url) {
-    beerImage.src = beerDetails.image_url;
-  } else {
-    console.error("No URL for the drink image");
-  }
-
-  const beerInfo = document.createElement("div");
-  beerInfo.classList.add("beer-info");
-
-  beerName.textContent = beerDetails.name;
-
-  const description = document.createElement("p");
-  description.textContent = `Description: ${beerDetails.description}`;
-
-  const volume = document.createElement("p");
-  volume.textContent = `Volume: ${
-    beerDetails.volume ? beerDetails.volume.value : "N/A"
-  } ${beerDetails.volume ? beerDetails.volume.unit : "N/A"}`;
-
-  const abv = document.createElement("p");
-  abv.textContent = `ABV: ${beerDetails.abv ? beerDetails.abv : "N/A"}`;
-
-  const ingredients = document.createElement("p");
-  ingredients.textContent = `Ingredients: ${getIngredients(
-    beerDetails.ingredients
-  )}`;
-
-  const foodPairing = document.createElement("p");
-  foodPairing.textContent = `Food Pairing: ${
-    beerDetails.food_pairing ? beerDetails.food_pairing : "N/A"
-  }`;
-
-  const brewersTips = document.createElement("p");
-  brewersTips.textContent = `Brewers Tips: ${
-    beerDetails.brewers_tips ? beerDetails.brewers_tips : "N/A"
-  }`;
-
-  beerInfo.appendChild(beerName);
-  beerInfo.appendChild(description);
-  beerInfo.appendChild(abv);
-  beerInfo.appendChild(volume);
-  beerInfo.appendChild(ingredients);
-  beerInfo.appendChild(foodPairing);
-  beerInfo.appendChild(brewersTips);
-
-  card.appendChild(img);
-  card.appendChild(beerInfo);
-
-  // Check if there is an image URL
-  if (beerDetails.image_url) {
-    // If there is an image URL, create an image element and set its source
-    const beerImage = document.createElement("img");
-    beerImage.src = beerDetails.image_url;
-    beerImage.classList.add("beer-image");
-    card.appendChild(beerImage);
-  } else {
-    // If there is no image URL, display a message
-    const noImageMessage = document.createElement("p");
-    noImageMessage.textContent = "No image available for this drink";
-    card.appendChild(noImageMessage);
-    console.error("No URL for the drink image");
-  }
-
-  // Clear previous beer card
-  const wrapper = document.querySelector(".wrapper");
-  wrapper.innerHTML = "";
-  wrapper.appendChild(card);
+function hideSpinner() {
+  spinner.style.display = "none";
+}
+function showSpinner() {
+  spinner.style.display = "block";
 }
 
-fetchBeerDetails(beerName).then((beerDetails) => {
-  displayBeerDetails(beerDetails);
-});
-
-// Function to get a string representation of ingredients
-function getIngredients(ingredients) {
-  let ingredientArray = [];
-
-  if (ingredients.malt) {
-    ingredientArray.push("Malt:\n");
-    ingredients.malt.forEach((malt) => {
-      ingredientArray.push(
-        `  ${malt.name}: ${malt.amount.value} ${malt.amount.unit}`
-      );
-    });
-  }
-
-  if (ingredients.hops) {
-    ingredientArray.push("\nHops:\n");
-    ingredients.hops.forEach((hop) => {
-      ingredientArray.push(
-        `  ${hop.name}: ${hop.amount.value} ${hop.amount.unit} (${hop.add} - ${hop.attribute})`
-      );
-    });
-  }
-
-  if (ingredients.yeast) {
-    ingredientArray.push("\nYeast:\n"); // Add a new line after the category label
-    ingredientArray.push(`${ingredients.yeast}`);
-  }
-
-  return ingredientArray.join("\n");
-}
-
-// ?beer_name=Hello My Name Is Lieke
-//Russian Doll – India Pale Ale
 const currentYear = new Date().getFullYear();
 document.getElementById("current-year").textContent = currentYear;

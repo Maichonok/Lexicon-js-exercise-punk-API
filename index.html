@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="responsive.css" />
   </head>
   <body>
-    <main class="container">
+    <main class="container" id="main-page">
       <h1 class="container-text">Welcome to BeerLand!</h1>
       <form id="search-form">
         <input type="text" id="search-input" placeholder="Search for a beer" />
@@ -21,18 +21,16 @@
         <h2 class="header-results">Search Results:</h2>
         <p id="main-error-message"></p>
         <ul id="search-results" class="beer-list"></ul>
+        <div id="spinner" class="spinner"></div>
         <div id="pagination-buttons"></div>
       </div>
       <div class="wrapper">
         <div class="beer-card">
           <img src="" alt="Beer Image" />
-          <p id="error-message"></p>
           <div class="beer-information">
             <button id="random-beer-btn">Random Beer</button>
             <h2 class="beer-header">Name: <span class="beer-name"></span></h2>
-            <a id="more-info-beer-btn" href="beer-details.html" target="_blank"
-              >See more</a
-            >
+            <a id="more-info-beer-btn" href="beer-details.html">See more</a>
           </div>
         </div>
       </div>
